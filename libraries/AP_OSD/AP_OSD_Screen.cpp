@@ -43,14 +43,14 @@ const AP_Param::GroupInfo AP_OSD_Screen::var_info[] = {
     // @Description: This sets the PWM lower limit for this screen
     // @Range: 900 2100
     // @User: Standard
-	AP_GROUPINFO("CHAN_MIN", 2, AP_OSD_Screen, channel_min, 900),
+    AP_GROUPINFO("CHAN_MIN", 2, AP_OSD_Screen, channel_min, 900),
 
     // @Param: CHAN_MAX
     // @DisplayName: Transmitter switch screen maximum pwm
     // @Description: This sets the PWM upper limit for this screen
     // @Range: 900 2100
     // @User: Standard
-	AP_GROUPINFO("CHAN_MAX", 3, AP_OSD_Screen, channel_max, 2100),
+    AP_GROUPINFO("CHAN_MAX", 3, AP_OSD_Screen, channel_max, 2100),
 
     // @Group: ALTITUDE
     // @Path: AP_OSD_Setting.cpp
@@ -163,25 +163,27 @@ void AP_OSD_Screen::draw_batused(uint8_t x, uint8_t y)
     backend->write(x,y, battery.has_failsafed(), "%c%4.0f", SYM_MAH, battery.consumed_mah());
 }
 
+char to_uppercase(char c)
+{
+    if (c >= 'a' && c<= 'z') {
+        return c + 'A' - 'a';
+    }
+    return c;
+}
+
 void AP_OSD_Screen::draw_message(uint8_t x, uint8_t y)
 {
     AP_Notify * notify = AP_Notify::instance();
     if (notify) {
         bool text_is_valid = AP_HAL::millis() - notify->get_text_updated_millis() < 20000;
         if (text_is_valid) {
-        	char buffer[51];
-        	//converted to uppercase,
-        	//because we do not have small letter chars inside used font
-        	strncpy(buffer, notify->get_text(), sizeof(buffer));
-        	for(int i=0; i<sizeof(buffer); i++) {
-        		char c = buffer[i];
-        		if(c == 0) {
-        			break;
-        		}
-        		if(c >= 'a' && c <= 'z') {
-        			buffer[i] =  c + 'A'-'a';
-        		}
-        	}
+            char buffer[NOTIFY_TEXT_BUFFER_SIZE];
+            //converted to uppercase,
+            //because we do not have small letter chars inside used font
+            strncpy(buffer, notify->get_text(), sizeof(buffer));
+            for (int i=0; i<sizeof(buffer); i++) {
+                buffer[i] = to_uppercase(buffer[i]);
+            }
             backend->write(x, y, buffer);
         }
     }
